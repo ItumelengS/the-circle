@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-screen px-6 fade-in">
       <div className="w-full max-w-sm">
         <h1 className="text-3xl font-bold text-center mb-2" style={{ color: 'var(--gold)' }}>
-          The Circle
+          Stokfela
         </h1>
         <p className="text-center opacity-50 mb-8">
           {mode === 'login' ? 'Sign in to your account' : 'Create a new account'}

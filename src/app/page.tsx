@@ -10,7 +10,7 @@ export default async function LandingPage() {
     <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center fade-in">
       <div className="max-w-md">
         <h1 className="text-5xl font-bold mb-2" style={{ color: 'var(--gold)' }}>
-          The Circle
+          Stokfela
         </h1>
         <p className="text-lg opacity-60 mb-8 tracking-widest uppercase">
           Rotation Society

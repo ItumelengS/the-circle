@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'The Circle — Rotation Society',
+  title: 'Stokfela — Rotation Society',
   description: 'A stokvel/rotation savings group app for South Africa',
 };
 

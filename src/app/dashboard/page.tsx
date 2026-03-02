@@ -14,7 +14,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--gold)' }}>
-            The Circle
+            Stokfela
           </h1>
           <p className="text-sm opacity-50">Welcome, {session.user.name || session.user.email}</p>
         </div>
