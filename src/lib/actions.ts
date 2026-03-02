@@ -280,6 +280,8 @@ export async function createGroup(formData: FormData) {
   const name = formData.get('name') as string;
   const icon = formData.get('icon') as string;
   const monthly_amount = parseInt(formData.get('monthly_amount') as string) || 500;
+  const group_type = (formData.get('group_type') as string) || 'rotation';
+  const payout_months = group_type === 'savings' ? parseInt(formData.get('payout_months') as string) || 12 : null;
 
   // Generate unique code
   const { data: codeData } = await supabase.rpc('generate_group_code');
@@ -289,9 +291,12 @@ export async function createGroup(formData: FormData) {
     .from('groups')
     .insert({
       name,
-      icon: icon || '🔄',
+      icon: icon || (group_type === 'savings' ? '💰' : '🔄'),
       code,
       monthly_amount,
+      group_type,
+      payout_months,
+      start_date: group_type === 'savings' ? new Date().toISOString() : null,
       created_by: user.id,
     })
     .select()
@@ -306,12 +311,14 @@ export async function createGroup(formData: FormData) {
     is_admin: true,
   });
 
-  // Add to rotation at position 0
-  await supabase.from('rotation_order').insert({
-    group_id: group.id,
-    user_id: user.id,
-    position: 0,
-  });
+  // Add to rotation only for rotation groups
+  if (group_type === 'rotation') {
+    await supabase.from('rotation_order').insert({
+      group_id: group.id,
+      user_id: user.id,
+      position: 0,
+    });
+  }
 
   // Upsert profile
   const avatar = formData.get('avatar') as string;
@@ -368,21 +375,23 @@ export async function joinGroup(formData: FormData): Promise<{ error?: string }>
     is_admin: false,
   });
 
-  // Get next rotation position
-  const { data: rotations } = await supabase
-    .from('rotation_order')
-    .select('position')
-    .eq('group_id', group.id)
-    .order('position', { ascending: false })
-    .limit(1);
+  // Add to rotation only for rotation groups
+  if (group.group_type !== 'savings') {
+    const { data: rotations } = await supabase
+      .from('rotation_order')
+      .select('position')
+      .eq('group_id', group.id)
+      .order('position', { ascending: false })
+      .limit(1);
 
-  const nextPosition = rotations && rotations.length > 0 ? rotations[0].position + 1 : 0;
+    const nextPosition = rotations && rotations.length > 0 ? rotations[0].position + 1 : 0;
 
-  await supabase.from('rotation_order').insert({
-    group_id: group.id,
-    user_id: user.id,
-    position: nextPosition,
-  });
+    await supabase.from('rotation_order').insert({
+      group_id: group.id,
+      user_id: user.id,
+      position: nextPosition,
+    });
+  }
 
   // Upsert profile
   const avatar = formData.get('avatar') as string;

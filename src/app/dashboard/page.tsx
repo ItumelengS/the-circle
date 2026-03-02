@@ -55,6 +55,12 @@ export default async function DashboardPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-semibold truncate">{group.name}</p>
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                      background: group.group_type === 'savings' ? 'var(--green)' : 'var(--blue)',
+                      color: '#0A0A0C',
+                    }}>
+                      {group.group_type === 'savings' ? 'Savings' : 'Rotation'}
+                    </span>
                     {group.is_admin && (
                       <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--gold)', color: '#0A0A0C' }}>
                         Admin

@@ -36,12 +36,17 @@ export type Profile = {
   updated_at: string;
 };
 
+export type GroupType = 'rotation' | 'savings';
+
 export type Group = {
   id: string;
   name: string;
   icon: string;
   code: string;
   monthly_amount: number;
+  group_type: GroupType;
+  payout_months: number | null;
+  start_date: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
