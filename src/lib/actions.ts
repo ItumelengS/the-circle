@@ -5,6 +5,8 @@ import { createServerClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
+import { sendPasswordResetEmail } from '@/lib/email';
 import type { GroupWithMeta, GroupDetails, Profile, MemberWithDetails } from '@/lib/types';
 
 async function getUser() {
@@ -86,6 +88,72 @@ export async function login(formData: FormData): Promise<{ error?: string }> {
   }
 
   redirect('/dashboard');
+}
+
+export async function forgotPassword(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const supabase = createServerClient();
+  const email = (formData.get('email') as string)?.toLowerCase().trim();
+
+  if (!email) return { error: 'Email is required.' };
+
+  const { data: user } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .single();
+
+  // Always return success to avoid email enumeration
+  if (!user) return { success: true };
+
+  // Generate token
+  const token = randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await supabase.from('password_reset_tokens').insert({
+    user_id: user.id,
+    token,
+    expires_at: expiresAt.toISOString(),
+  });
+
+  await sendPasswordResetEmail(email, token);
+  return { success: true };
+}
+
+export async function resetPassword(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const supabase = createServerClient();
+  const token = formData.get('token') as string;
+  const password = formData.get('password') as string;
+
+  if (!token || !password) return { error: 'Missing token or password.' };
+  if (password.length < 6) return { error: 'Password must be at least 6 characters.' };
+
+  const { data: resetToken } = await supabase
+    .from('password_reset_tokens')
+    .select('*')
+    .eq('token', token)
+    .eq('used', false)
+    .single();
+
+  if (!resetToken) return { error: 'Invalid or expired reset link.' };
+
+  if (new Date(resetToken.expires_at) < new Date()) {
+    return { error: 'This reset link has expired. Request a new one.' };
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  await supabase
+    .from('users')
+    .update({ password: hashedPassword })
+    .eq('id', resetToken.user_id);
+
+  // Mark token as used
+  await supabase
+    .from('password_reset_tokens')
+    .update({ used: true })
+    .eq('id', resetToken.id);
+
+  return { success: true };
 }
 
 // =============================================
