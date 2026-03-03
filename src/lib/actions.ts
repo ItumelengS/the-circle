@@ -532,15 +532,16 @@ export async function toggleContribution(
   const user = await getUser();
   const supabase = createServerClient();
 
-  // Verify membership
+  // Verify admin
   const { data: membership } = await supabase
     .from('group_members')
-    .select('id')
+    .select('is_admin')
     .eq('group_id', groupId)
     .eq('user_id', user.id)
     .single();
 
   if (!membership) throw new Error('Not a member');
+  if (!membership.is_admin) throw new Error('Only admins can mark payments');
 
   if (paid) {
     await supabase.from('contributions').upsert(

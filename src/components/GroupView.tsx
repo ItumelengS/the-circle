@@ -140,6 +140,7 @@ export default function GroupView({ data }: { data: GroupDetails }) {
           handleToggle={handleToggle}
           isPending={isPending}
           isSavings={isSavings}
+          is_admin={is_admin}
         />
       )}
 
@@ -265,14 +266,16 @@ function SavingsHomeTab({
               Pay <strong style={{ color: 'var(--gold)' }}>R{group.monthly_amount.toLocaleString()}</strong> for {MONTHS[currentMonth]} savings
             </p>
           </div>
-          <button
-            onClick={() => handleToggle(current_user_id, currentMonth, false)}
-            disabled={isPending}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={{ background: 'var(--green)', color: '#0A0A0C' }}
-          >
-            Mark Paid
-          </button>
+          {is_admin && (
+            <button
+              onClick={() => handleToggle(current_user_id, currentMonth, false)}
+              disabled={isPending}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              style={{ background: 'var(--green)', color: '#0A0A0C' }}
+            >
+              Mark Paid
+            </button>
+          )}
         </div>
       )}
 
@@ -412,20 +415,32 @@ function SavingsHomeTab({
                     </p>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggle(member.user_id, currentMonth, paid);
-                    }}
-                    disabled={isPending}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all"
-                    style={{
-                      background: paid ? 'var(--green)' : 'rgba(255,255,255,0.06)',
-                      color: paid ? '#0A0A0C' : 'rgba(255,255,255,0.3)',
-                    }}
-                  >
-                    ✓
-                  </button>
+                  {is_admin ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggle(member.user_id, currentMonth, paid);
+                      }}
+                      disabled={isPending}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all"
+                      style={{
+                        background: paid ? 'var(--green)' : 'rgba(255,255,255,0.06)',
+                        color: paid ? '#0A0A0C' : 'rgba(255,255,255,0.3)',
+                      }}
+                    >
+                      ✓
+                    </button>
+                  ) : (
+                    <span
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                      style={{
+                        background: paid ? 'var(--green)' : 'rgba(255,255,255,0.06)',
+                        color: paid ? '#0A0A0C' : 'rgba(255,255,255,0.3)',
+                      }}
+                    >
+                      {paid ? '✓' : ''}
+                    </span>
+                  )}
                 </div>
 
                 {isExpanded && (
@@ -612,14 +627,16 @@ function HomeTab({
               <strong>{recipient?.name || 'the recipient'}</strong> for {MONTHS[currentMonth]}
             </p>
           </div>
-          <button
-            onClick={() => handleToggle(current_user_id, currentMonth, false)}
-            disabled={isPending}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={{ background: 'var(--green)', color: '#0A0A0C' }}
-          >
-            Mark Paid
-          </button>
+          {is_admin && (
+            <button
+              onClick={() => handleToggle(current_user_id, currentMonth, false)}
+              disabled={isPending}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              style={{ background: 'var(--green)', color: '#0A0A0C' }}
+            >
+              Mark Paid
+            </button>
+          )}
         </div>
       )}
 
@@ -758,20 +775,32 @@ function HomeTab({
                     </p>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggle(member.user_id, currentMonth, paid);
-                    }}
-                    disabled={isPending}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all"
-                    style={{
-                      background: paid ? 'var(--green)' : 'rgba(255,255,255,0.06)',
-                      color: paid ? '#0A0A0C' : 'rgba(255,255,255,0.3)',
-                    }}
-                  >
-                    ✓
-                  </button>
+                  {is_admin ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggle(member.user_id, currentMonth, paid);
+                      }}
+                      disabled={isPending}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all"
+                      style={{
+                        background: paid ? 'var(--green)' : 'rgba(255,255,255,0.06)',
+                        color: paid ? '#0A0A0C' : 'rgba(255,255,255,0.3)',
+                      }}
+                    >
+                      ✓
+                    </button>
+                  ) : (
+                    <span
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                      style={{
+                        background: paid ? 'var(--green)' : 'rgba(255,255,255,0.06)',
+                        color: paid ? '#0A0A0C' : 'rgba(255,255,255,0.3)',
+                      }}
+                    >
+                      {paid ? '✓' : ''}
+                    </span>
+                  )}
                 </div>
 
                 {isExpanded && (
@@ -900,6 +929,7 @@ function TrackTab({
   handleToggle,
   isPending,
   isSavings = false,
+  is_admin,
 }: {
   group: GroupDetails['group'];
   members: MemberWithDetails[];
@@ -911,6 +941,7 @@ function TrackTab({
   handleToggle: (userId: string, month: number, paid: boolean) => void;
   isPending: boolean;
   isSavings?: boolean;
+  is_admin: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -947,24 +978,35 @@ function TrackTab({
                   const isRecipient = !isSavings && getRecipientForMonth(monthIdx)?.user_id === member.user_id;
                   const isCurrentMonth = monthIdx === currentMonth;
 
+                  const cellStyle = {
+                    background: isCurrentMonth
+                      ? 'rgba(232,197,71,0.1)'
+                      : 'rgba(255,255,255,0.03)',
+                    border: isCurrentMonth
+                      ? '1px solid rgba(232,197,71,0.2)'
+                      : '1px solid transparent',
+                    color: paid ? 'var(--green)' : isRecipient ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
+                  };
+
                   return (
                     <td key={monthIdx} className="py-1 px-1 text-center">
-                      <button
-                        onClick={() => handleToggle(member.user_id, monthIdx, paid)}
-                        disabled={isPending}
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-xs transition-all mx-auto"
-                        style={{
-                          background: isCurrentMonth
-                            ? 'rgba(232,197,71,0.1)'
-                            : 'rgba(255,255,255,0.03)',
-                          border: isCurrentMonth
-                            ? '1px solid rgba(232,197,71,0.2)'
-                            : '1px solid transparent',
-                          color: paid ? 'var(--green)' : isRecipient ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
-                        }}
-                      >
-                        {paid ? '✓' : isRecipient ? '★' : ''}
-                      </button>
+                      {is_admin ? (
+                        <button
+                          onClick={() => handleToggle(member.user_id, monthIdx, paid)}
+                          disabled={isPending}
+                          className="w-7 h-7 rounded-md flex items-center justify-center text-xs transition-all mx-auto"
+                          style={cellStyle}
+                        >
+                          {paid ? '✓' : isRecipient ? '★' : ''}
+                        </button>
+                      ) : (
+                        <span
+                          className="w-7 h-7 rounded-md flex items-center justify-center text-xs mx-auto"
+                          style={cellStyle}
+                        >
+                          {paid ? '✓' : isRecipient ? '★' : ''}
+                        </span>
+                      )}
                     </td>
                   );
                 })}
@@ -977,7 +1019,7 @@ function TrackTab({
       <div className="flex gap-4 justify-center text-xs opacity-50">
         <span><span style={{ color: 'var(--green)' }}>✓</span> Paid</span>
         {!isSavings && <span><span style={{ color: 'var(--gold)' }}>★</span> Recipient</span>}
-        <span>Tap to toggle</span>
+        {is_admin && <span>Tap to toggle</span>}
       </div>
     </div>
   );
