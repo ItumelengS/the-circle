@@ -193,6 +193,8 @@ function SavingsHomeTab({
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const currentUserPaid = isUserPaid(current_user_id, currentMonth);
+
   const payoutMonths = group.payout_months || 12;
   const startDate = group.start_date ? new Date(group.start_date) : new Date(group.created_at);
 
@@ -253,6 +255,27 @@ function SavingsHomeTab({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Payment due banner */}
+      {!currentUserPaid && (
+        <div className="p-4 rounded-xl flex items-center gap-3" style={{ background: 'rgba(232,92,71,0.1)', border: '1px solid rgba(232,92,71,0.2)' }}>
+          <span className="text-2xl">💸</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>Contribution due</p>
+            <p className="text-xs opacity-60">
+              Pay <strong style={{ color: 'var(--gold)' }}>R{group.monthly_amount.toLocaleString()}</strong> for {MONTHS[currentMonth]} savings
+            </p>
+          </div>
+          <button
+            onClick={() => handleToggle(current_user_id, currentMonth, false)}
+            disabled={isPending}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style={{ background: 'var(--green)', color: '#0A0A0C' }}
+          >
+            Mark Paid
+          </button>
+        </div>
+      )}
+
       {/* Invite code banner */}
       <div className="glass p-4 flex items-center justify-between">
         <div>
@@ -536,6 +559,7 @@ function HomeTab({
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const currentUserPaid = isUserPaid(current_user_id, currentMonth);
   const potTotal = group.monthly_amount * members.length;
   const paidPercent = members.length > 0 ? Math.round((paidCount / members.length) * 100) : 0;
 
@@ -577,6 +601,28 @@ function HomeTab({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Payment due banner */}
+      {!currentUserPaid && (
+        <div className="p-4 rounded-xl flex items-center gap-3" style={{ background: 'rgba(232,92,71,0.1)', border: '1px solid rgba(232,92,71,0.2)' }}>
+          <span className="text-2xl">💸</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold" style={{ color: 'var(--red)' }}>Payment due</p>
+            <p className="text-xs opacity-60">
+              Pay <strong style={{ color: 'var(--gold)' }}>R{group.monthly_amount.toLocaleString()}</strong> to{' '}
+              <strong>{recipient?.name || 'the recipient'}</strong> for {MONTHS[currentMonth]}
+            </p>
+          </div>
+          <button
+            onClick={() => handleToggle(current_user_id, currentMonth, false)}
+            disabled={isPending}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style={{ background: 'var(--green)', color: '#0A0A0C' }}
+          >
+            Mark Paid
+          </button>
+        </div>
+      )}
+
       {/* Invite code banner */}
       <div className="glass p-4 flex items-center justify-between">
         <div>
