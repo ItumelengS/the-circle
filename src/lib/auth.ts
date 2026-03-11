@@ -1,7 +1,9 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import { createServerClient } from '@/lib/supabase';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -14,12 +16,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const supabase = createServerClient();
-        const { data: user } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', credentials.email as string)
-          .single();
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, credentials.email as string))
+          .limit(1);
 
         if (!user || !user.password) return null;
 
