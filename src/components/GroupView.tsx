@@ -567,7 +567,7 @@ function HomeTab({
   isPending: boolean;
   startTransition: (fn: () => void) => void;
 }) {
-  const [showBank, setShowBank] = useState(false);
+  const [copiedBank, setCopiedBank] = useState(false);
   const [editAmount, setEditAmount] = useState(false);
   const [amountVal, setAmountVal] = useState(group.monthly_amount);
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
@@ -669,37 +669,51 @@ function HomeTab({
         </div>
 
         {recipient && (
-          <div className="flex items-center gap-3 mb-4 p-3 rounded-xl" style={{ background: 'rgba(232,197,71,0.08)' }}>
-            <span className="text-3xl">{recipient.avatar}</span>
-            <div className="flex-1">
-              <p className="font-semibold">{recipient.name}</p>
-              <p className="text-xs opacity-50">This month&apos;s recipient</p>
+          <div className="mb-4 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(232,197,71,0.25)', background: 'rgba(232,197,71,0.06)' }}>
+            <div className="flex items-center gap-3 p-4">
+              <span className="text-3xl">{recipient.avatar}</span>
+              <div className="flex-1">
+                <p className="font-semibold">{recipient.name}</p>
+                <p className="text-xs opacity-50">This month&apos;s recipient</p>
+              </div>
+              <p className="font-bold text-lg" style={{ color: 'var(--gold)' }}>R{potTotal.toLocaleString()}</p>
             </div>
-            <p className="font-bold" style={{ color: 'var(--gold)' }}>R{potTotal.toLocaleString()}</p>
-          </div>
-        )}
 
-        {recipient && (
-          <button
-            onClick={() => setShowBank(!showBank)}
-            className="text-xs underline opacity-50 hover:opacity-80 mb-3"
-          >
-            {showBank ? 'Hide' : 'Show'} Banking Details
-          </button>
-        )}
-
-        {showBank && recipient && (
-          <div className="p-3 rounded-lg mb-3" style={{ background: 'rgba(255,255,255,0.03)' }}>
             {recipient.bank ? (
-              <div className="text-sm flex flex-col gap-1">
-                <p><span className="opacity-50">Bank:</span> {recipient.bank}</p>
-                <p><span className="opacity-50">Type:</span> {recipient.acc_type}</p>
-                <p className="font-mono"><span className="opacity-50">Acc:</span> {recipient.acc_num}</p>
-                {recipient.branch && <p><span className="opacity-50">Branch:</span> {recipient.branch}</p>}
-                {recipient.phone && <p><span className="opacity-50">Phone:</span> {recipient.phone}</p>}
+              <div className="px-4 pb-4">
+                <div className="p-3 rounded-lg flex flex-col gap-1.5" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                  <p className="text-xs font-medium opacity-50 mb-1">Pay to</p>
+                  <p className="text-sm"><span className="opacity-50">Bank:</span> {recipient.bank}</p>
+                  <p className="text-sm"><span className="opacity-50">Type:</span> {recipient.acc_type}</p>
+                  <p className="text-sm font-mono"><span className="opacity-50">Acc:</span> {recipient.acc_num}</p>
+                  {recipient.branch && <p className="text-sm"><span className="opacity-50">Branch:</span> {recipient.branch}</p>}
+                  {recipient.phone && <p className="text-sm"><span className="opacity-50">Phone:</span> {recipient.phone}</p>}
+                </div>
+                <button
+                  onClick={() => {
+                    const details = [
+                      `Bank: ${recipient.bank}`,
+                      `Account: ${recipient.acc_num}`,
+                      `Type: ${recipient.acc_type}`,
+                      recipient.branch ? `Branch: ${recipient.branch}` : '',
+                      recipient.phone ? `Phone: ${recipient.phone}` : '',
+                      `Amount: R${group.monthly_amount.toLocaleString()}`,
+                      `Ref: ${group.name}`,
+                    ].filter(Boolean).join('\n');
+                    navigator.clipboard.writeText(details);
+                    setCopiedBank(true);
+                    setTimeout(() => setCopiedBank(false), 2000);
+                  }}
+                  className="mt-3 w-full py-2 rounded-lg text-xs font-medium transition-all"
+                  style={{ background: copiedBank ? 'var(--green)' : 'rgba(255,255,255,0.06)', color: copiedBank ? '#0A0A0C' : 'var(--text)' }}
+                >
+                  {copiedBank ? 'Copied!' : 'Copy Banking Details'}
+                </button>
               </div>
             ) : (
-              <p className="text-sm opacity-50">No banking details added yet</p>
+              <div className="px-4 pb-4">
+                <p className="text-sm opacity-50">No banking details added yet</p>
+              </div>
             )}
           </div>
         )}
